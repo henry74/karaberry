@@ -77,7 +77,7 @@ func newPlayCmd(song *Song) *exec.Cmd {
 			log.Printf("Playing from file: %s\n", song.Filename)
 			switch Config.MediaPlayer {
 			case "vlc":
-				return exec.Command("vlc", "--play-and-exit", "--fullscreen", "-I", "dummy", song.Filename)
+				return exec.Command(Config.ScriptsFolder+"/vlc/start.sh", song.Filename)
 			default:
 				return exec.Command("omxplayer", song.Filename)
 			}
@@ -87,7 +87,7 @@ func newPlayCmd(song *Song) *exec.Cmd {
 
 		switch Config.MediaPlayer {
 		case "vlc":
-			return exec.Command("vlc", "--play-and-exit", "--fullscreen", "-I", "dummy", song.YoutubeURL())
+			return exec.Command(Config.ScriptsFolder+"/vlc/start.sh", song.YoutubeURL())
 		default:
 			return exec.Command(Config.ScriptsFolder+"/omxplayer/start.sh", song.YoutubeURL())
 		}
