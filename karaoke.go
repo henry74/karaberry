@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -16,7 +17,7 @@ type (
 		Artist    string `json:"artist"`
 		Name      string `json:"name"`
 		YoutubeID string `json:"youtube_id"`
-		filename  string `json:"filename"`
+		Filename  string `json:"filename"`
 	}
 
 	SongHistory struct {
@@ -69,14 +70,16 @@ func init() {
 }
 
 func newPlayCmd(song *Song) *exec.Cmd {
-	if song.filename != "" {
-		if _, err := os.Stat(song.filename); err == nil {
-			log.Printf("Playing from file: %s\n", song.filename)
+	song.info()
+
+	if song.Filename != "" {
+		if _, err := os.Stat(song.Filename); err == nil {
+			log.Printf("Playing from file: %s\n", song.Filename)
 			switch Config.MediaPlayer {
 			case "vlc":
-				return exec.Command("vlc", "--play-and-exit", "--fullscreen", "-I", "dummy", song.filename)
+				return exec.Command("vlc", "--play-and-exit", "--fullscreen", "-I", "dummy", song.Filename)
 			default:
-				return exec.Command("omxplayer", song.filename)
+				return exec.Command("omxplayer", song.Filename)
 			}
 		}
 	} else if song.YoutubeURL() != "" {
@@ -96,12 +99,23 @@ func newPlayCmd(song *Song) *exec.Cmd {
 
 //============
 // Song
-func (s Song) YoutubeURL() string {
-	return fmt.Sprintf("https://www.youtube.com/watch?v=%s", s.YoutubeID)
+func (song Song) YoutubeURL() string {
+	return fmt.Sprintf("https://www.youtube.com/watch?v=%s", song.YoutubeID)
 }
 
-func (s Song) String() string {
-	return fmt.Sprintf("%s: %s", s.Artist, s.Name)
+func (song Song) String() string {
+	return fmt.Sprintf("%s: %s", song.Artist, song.Name)
+}
+
+func (song *Song) info() {
+	s := reflect.ValueOf(song).Elem()
+	typeOfT := s.Type()
+
+	for i := 0; i < s.NumField(); i++ {
+		f := s.Field(i)
+		fmt.Printf("%d: %s %s = %v\n", i,
+			typeOfT.Field(i).Name, f.Type(), f.Interface())
+	}
 }
 
 //============
