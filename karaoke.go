@@ -82,8 +82,10 @@ func newPlayCmd(song *Song) *exec.Cmd {
 				return exec.Command("omxplayer", song.Filename)
 			}
 		}
-	} else if song.YoutubeURL() != "" {
-		log.Println("Streaming file")
+		log.Printf("Could not find file: %s\n", song.Filename)
+	}
+	if song.YoutubeURL() != "" {
+		log.Println("Attempting to stream file")
 
 		switch Config.MediaPlayer {
 		case "vlc":
