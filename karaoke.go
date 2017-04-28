@@ -69,6 +69,18 @@ func init() {
 	}
 }
 
+func downloadSong(song *Song) {
+	log.Println("Attempting to download song")
+	output := Config.MediaFolder + "/%(title)s-%(id)s.%(ext)s"
+	cmd := exec.Command(Config.ScriptsFolder+"/youtube-dl/download.sh", output, song.YoutubeURL())
+	if output, err := cmd.Output(); err != nil {
+		log.Printf("%v\n", cmd)
+		log.Printf("Could not download: %v - %s\n", err, string(output))
+	} else {
+		log.Printf("Succesfully downloaded file: %s", song.Filename)
+	}
+}
+
 func newPlayCmd(song *Song) *exec.Cmd {
 	song.info()
 
@@ -83,6 +95,7 @@ func newPlayCmd(song *Song) *exec.Cmd {
 			}
 		}
 		log.Printf("Could not find file: %s\n", song.Filename)
+		go downloadSong(song)
 	}
 	if song.YoutubeURL() != "" {
 		log.Println("Attempting to stream file")
